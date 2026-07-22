@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>灵感工坊 · 作品管理</title>
     <style>
-        /* ---------- 全局样式 ---------- */
+        /* 样式保持不变，沿用之前的 */
         * {
             margin: 0;
             padding: 0;
@@ -27,8 +27,6 @@
             max-width: 1200px;
             margin: 0 auto;
         }
-
-        /* ---------- 登录/注册界面 ---------- */
         .auth-container {
             max-width: 440px;
             margin: 0 auto;
@@ -153,7 +151,6 @@
             margin-top: 0;
         }
 
-        /* ---------- 主界面（登录后） ---------- */
         .main-app {
             display: none;
         }
@@ -705,7 +702,6 @@
                     }
                 }, 1000);
             } catch (err) {
-                // 如果邮箱登录未开启，给出明确提示
                 if (err.code === 'LOGIN_TYPE_DISABLED') {
                     registerError.textContent = '❌ 邮箱登录未开启，请在 CloudBase 控制台「身份认证」中开启。';
                 } else {
@@ -751,8 +747,9 @@
                     password: password
                 });
 
+                // 注册成功后，auth 会自动登录，不需要额外操作
                 registerSuccess.textContent = '✅ 注册成功！正在跳转...';
-                setTimeout(checkAuthState, 800);
+                // 等待状态变化自动跳转
             } catch (err) {
                 if (err.code === 'LOGIN_TYPE_DISABLED') {
                     registerError.textContent = '❌ 邮箱登录未开启，请在 CloudBase 控制台「身份认证」中开启。';
@@ -779,7 +776,7 @@
                     password: password
                 });
                 loginSuccess.textContent = '✅ 登录成功！';
-                setTimeout(checkAuthState, 500);
+                // 等待状态变化
             } catch (err) {
                 loginError.textContent = '❌ ' + (err.message || '登录失败');
                 console.error('登录错误:', err);
@@ -792,43 +789,36 @@
         logoutBtn.addEventListener('click', async () => {
             try {
                 await auth.signOut();
-                setTimeout(checkAuthState, 500);
             } catch (err) {
                 console.error('退出错误:', err);
             }
         });
 
         // ============================================================
-        // 检查登录状态
+        // 监听登录状态变化（核心）
         // ============================================================
-        async function checkAuthState() {
-            try {
-                const user = await auth.getAuthState();
-                if (user) {
-                    currentUser = user;
-                    authContainer.style.display = 'none';
-                    mainApp.classList.add('active');
-                    userEmailSpan.textContent = user.email || user.uid;
-                    await loadProjects();
-                } else {
-                    currentUser = null;
-                    authContainer.style.display = 'block';
-                    mainApp.classList.remove('active');
-                    allProjects = [];
-                    renderProjects();
-                }
-            } catch (err) {
-                console.error('检查登录状态失败:', err);
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // 用户已登录
+                currentUser = user;
+                authContainer.style.display = 'none';
+                mainApp.classList.add('active');
+                userEmailSpan.textContent = user.email || user.uid;
+                loadProjects(); // 加载作品
+            } else {
+                // 用户未登录
+                currentUser = null;
+                authContainer.style.display = 'block';
+                mainApp.classList.remove('active');
+                allProjects = [];
+                renderProjects();
+                // 重置表单显示（保留当前登录/注册切换状态）
+                // 但不要干扰用户切换
             }
-        }
-
-        // 首次加载检查
-        checkAuthState();
-
-        // 监听认证变化（兼容）
-        auth.onAuthStateChange && auth.onAuthStateChange(() => {
-            checkAuthState();
         });
+
+        // 首次加载时，由于 onAuthStateChanged 会立即触发，不需要额外检查
+        // 但为了避免未触发，可以手动触发一次（实际上不需要）
 
         // ============================================================
         // 作品数据操作
