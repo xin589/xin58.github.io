@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>灵感工坊 · 作品管理</title>
     <style>
+        /* ---------- 全局样式 ---------- */
         * {
             margin: 0;
             padding: 0;
@@ -27,8 +28,9 @@
             margin: 0 auto;
         }
 
+        /* ---------- 登录/注册界面 ---------- */
         .auth-container {
-            max-width: 400px;
+            max-width: 420px;
             margin: 0 auto;
             background: rgba(255, 255, 255, 0.04);
             border-radius: 2rem;
@@ -49,7 +51,7 @@
         .auth-container .sub {
             text-align: center;
             color: #7a89aa;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             font-size: 0.95rem;
         }
         .auth-container label {
@@ -83,7 +85,7 @@
             border: none;
             cursor: pointer;
             transition: all 0.25s ease;
-            margin-top: 1.5rem;
+            margin-top: 1rem;
             background: linear-gradient(135deg, #6f55e0, #8a6cff);
             color: #fff;
             box-shadow: 0 4px 14px rgba(138, 108, 255, 0.3);
@@ -91,6 +93,20 @@
         .auth-container .btn:hover {
             transform: scale(1.02);
             box-shadow: 0 8px 24px rgba(138, 108, 255, 0.45);
+        }
+        .auth-container .btn-outline-sm {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #d0d9f0;
+            padding: 0.5rem 1rem;
+            border-radius: 60px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .auth-container .btn-outline-sm:hover {
+            background: rgba(255, 255, 255, 0.06);
         }
         .auth-container .toggle-link {
             text-align: center;
@@ -117,7 +133,23 @@
             text-align: center;
             min-height: 1.5rem;
         }
+        .code-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .code-row input {
+            flex: 1;
+        }
+        .code-row button {
+            margin-top: 0;
+            padding: 0.7rem 1rem;
+            white-space: nowrap;
+            width: auto;
+            flex-shrink: 0;
+        }
 
+        /* ---------- 主界面（登录后） ---------- */
         .main-app {
             display: none;
         }
@@ -420,6 +452,12 @@
             .auth-container {
                 padding: 1.5rem;
             }
+            .code-row {
+                flex-wrap: wrap;
+            }
+            .code-row button {
+                width: 100%;
+            }
         }
         @media (max-width: 420px) {
             .project-grid {
@@ -430,11 +468,12 @@
 </head>
 <body>
     <div class="app-wrapper">
-        <!-- 登录/注册 -->
+        <!-- ========== 登录 / 注册界面 ========== -->
         <div id="authContainer" class="auth-container">
             <h1>✦ 灵感工坊</h1>
             <div class="sub">登录以管理你的作品</div>
 
+            <!-- 登录表单 -->
             <form id="loginForm">
                 <label for="loginEmail">邮箱</label>
                 <input type="email" id="loginEmail" placeholder="your@email.com" required />
@@ -449,21 +488,31 @@
                 还没有账号？ <a id="showRegister">立即注册</a>
             </div>
 
-            <form id="registerForm" style="display:none; margin-top: 1.5rem;">
+            <!-- 注册表单 -->
+            <form id="registerForm" style="display:none; margin-top: 1rem;">
                 <label for="registerEmail">邮箱</label>
                 <input type="email" id="registerEmail" placeholder="your@email.com" required />
+
                 <label for="registerPassword">密码</label>
                 <input type="password" id="registerPassword" placeholder="至少6位" required minlength="6" />
+
+                <label for="registerCode">邮箱验证码</label>
+                <div class="code-row">
+                    <input type="text" id="registerCode" placeholder="6位验证码" required />
+                    <button type="button" class="btn btn-outline-sm" id="getCodeBtn">获取验证码</button>
+                </div>
+
                 <button type="submit" class="btn">注 册</button>
                 <div class="error-msg" id="registerError"></div>
                 <div class="success-msg" id="registerSuccess"></div>
             </form>
+
             <div class="toggle-link" id="showLoginLink" style="display:none;">
                 已有账号？ <a id="showLogin">去登录</a>
             </div>
         </div>
 
-        <!-- 主应用 -->
+        <!-- ========== 主应用（登录后） ========== -->
         <div id="mainApp" class="main-app">
             <header class="navbar">
                 <div class="logo">✦ 灵感工坊</div>
@@ -486,7 +535,7 @@
             </div>
         </div>
 
-        <!-- 模态框 -->
+        <!-- ========== 模态框（添加/编辑） ========== -->
         <div class="modal-overlay" id="modalOverlay">
             <div class="modal">
                 <div class="modal-title" id="modalTitle">添加作品</div>
@@ -538,15 +587,12 @@
         // ============================================================
         // 🔥 只需要替换这一行：把你的环境 ID 填进去！
         // ============================================================
-        const ENV_ID = 'my-portfolio-d3gqx38bmf1e0296e'; // 👈 改成你的
+        const ENV_ID = 'my-portfolio-d3gqx38bmf1e0296e'; // 👈 改成你的，例如 'my-portfolio-xxxxx'
 
         // ============================================================
         // 初始化 CloudBase
         // ============================================================
-        const app = cloudbase.init({
-            env: ENV_ID
-        });
-
+        const app = cloudbase.init({ env: ENV_ID });
         const auth = app.auth();
         const db = app.database();
 
@@ -591,9 +637,16 @@
         const submitBtn = document.getElementById('submitBtn');
         const cancelBtn = document.getElementById('cancelBtn');
 
+        // 注册专用
+        const registerEmail = document.getElementById('registerEmail');
+        const registerPassword = document.getElementById('registerPassword');
+        const registerCode = document.getElementById('registerCode');
+        const getCodeBtn = document.getElementById('getCodeBtn');
+
         let currentUser = null;
         let allProjects = [];
         let currentImageData = '';
+        let verificationId = null; // 保存验证码ID
 
         // ============================================================
         // 切换登录/注册表单
@@ -620,21 +673,76 @@
         });
 
         // ============================================================
-        // 注册
+        // 获取验证码
+        // ============================================================
+        getCodeBtn.addEventListener('click', async () => {
+            const email = registerEmail.value.trim();
+            if (!email) {
+                registerError.textContent = '❌ 请先填写邮箱';
+                return;
+            }
+            registerError.textContent = '';
+            registerSuccess.textContent = '';
+            try {
+                const verification = await auth.getVerification({ email: email });
+                verificationId = verification.verification_id;
+                registerSuccess.textContent = '📧 验证码已发送，请查看邮箱（含垃圾箱）！';
+                getCodeBtn.textContent = '已发送 (60s)';
+                getCodeBtn.disabled = true;
+                let countdown = 60;
+                const timer = setInterval(() => {
+                    countdown--;
+                    getCodeBtn.textContent = `重新发送 (${countdown}s)`;
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        getCodeBtn.textContent = '获取验证码';
+                        getCodeBtn.disabled = false;
+                    }
+                }, 1000);
+            } catch (err) {
+                registerError.textContent = '❌ 发送失败：' + (err.message || '请检查邮箱是否正确');
+                console.error('获取验证码错误:', err);
+            }
+        });
+
+        // ============================================================
+        // 注册（三步流程）
         // ============================================================
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('registerEmail').value.trim();
-            const password = document.getElementById('registerPassword').value;
+            const email = registerEmail.value.trim();
+            const password = registerPassword.value;
+            const code = registerCode.value.trim();
+
             registerError.textContent = '';
             registerSuccess.textContent = '';
 
+            if (!verificationId) {
+                registerError.textContent = '❌ 请先点击"获取验证码"';
+                return;
+            }
+            if (!code || code.length !== 6) {
+                registerError.textContent = '❌ 请输入6位验证码';
+                return;
+            }
+
             try {
+                // 1. 验证验证码
+                const verifyRes = await auth.verify({
+                    verification_id: verificationId,
+                    verification_code: code
+                });
+
+                // 2. 注册
                 await auth.signUp({
                     email: email,
+                    verification_code: code,
+                    verification_token: verifyRes.verification_token,
                     password: password
                 });
-                registerSuccess.textContent = '✅ 注册成功！请查收邮件激活账号。';
+
+                registerSuccess.textContent = '✅ 注册成功！正在跳转...';
+                setTimeout(checkAuthState, 800);
             } catch (err) {
                 registerError.textContent = '❌ ' + (err.message || '注册失败，请重试');
                 console.error('注册错误:', err);
@@ -657,6 +765,7 @@
                     password: password
                 });
                 loginSuccess.textContent = '✅ 登录成功！';
+                setTimeout(checkAuthState, 500);
             } catch (err) {
                 loginError.textContent = '❌ ' + (err.message || '登录失败');
                 console.error('登录错误:', err);
@@ -669,17 +778,15 @@
         logoutBtn.addEventListener('click', async () => {
             try {
                 await auth.signOut();
+                setTimeout(checkAuthState, 500);
             } catch (err) {
                 console.error('退出错误:', err);
             }
         });
 
         // ============================================================
-        // 监听登录状态变化（兼容写法）
+        // 检查登录状态
         // ============================================================
-        // 注意：CloudBase SDK 2.x 使用 getAuthState() 获取当前用户
-        // 推荐在页面加载时检查登录状态，并在登录/退出后手动刷新
-
         async function checkAuthState() {
             try {
                 const user = await auth.getAuthState();
@@ -701,85 +808,22 @@
             }
         }
 
-        // 页面加载时检查
+        // 首次加载检查
         checkAuthState();
 
-        // 登录成功后重新检查
-        auth.onAuthStateChange((event, user) => {
-            // 注意：onAuthStateChange 是 CloudBase 的正确 API
-            // 但为了兼容，我们用 checkAuthState 重新加载
+        // 监听认证变化（兼容）
+        auth.onAuthStateChange && auth.onAuthStateChange(() => {
             checkAuthState();
         });
 
-        // 但 onAuthStateChange 可能在某些版本不存在，用轮询或事件替代
-        // 更稳健：在登录/注册/退出后手动调用 checkAuthState
-
-        // 重写登录/注册/退出，在完成后手动刷新
-        const originalSignUp = registerForm.addEventListener;
-        const originalSignIn = loginForm.addEventListener;
-
-        // 每次登录/注册成功后，延迟刷新状态
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('registerEmail').value.trim();
-            const password = document.getElementById('registerPassword').value;
-            registerError.textContent = '';
-            registerSuccess.textContent = '';
-
-            try {
-                await auth.signUp({
-                    email: email,
-                    password: password
-                });
-                registerSuccess.textContent = '✅ 注册成功！请查收邮件激活账号。';
-                // 延迟检查状态
-                setTimeout(checkAuthState, 500);
-            } catch (err) {
-                registerError.textContent = '❌ ' + (err.message || '注册失败，请重试');
-                console.error('注册错误:', err);
-            }
-        });
-
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            loginError.textContent = '';
-            loginSuccess.textContent = '';
-
-            try {
-                await auth.signIn({
-                    email: email,
-                    password: password
-                });
-                loginSuccess.textContent = '✅ 登录成功！';
-                // 延迟检查状态
-                setTimeout(checkAuthState, 500);
-            } catch (err) {
-                loginError.textContent = '❌ ' + (err.message || '登录失败');
-                console.error('登录错误:', err);
-            }
-        });
-
-        logoutBtn.addEventListener('click', async () => {
-            try {
-                await auth.signOut();
-                setTimeout(checkAuthState, 500);
-            } catch (err) {
-                console.error('退出错误:', err);
-            }
-        });
-
         // ============================================================
-        // 加载作品（仅当前用户）
+        // 作品数据操作
         // ============================================================
         async function loadProjects() {
             if (!currentUser) return;
             try {
                 const res = await db.collection('projects')
-                    .where({
-                        userId: currentUser.uid
-                    })
+                    .where({ userId: currentUser.uid })
                     .get();
                 allProjects = res.data || [];
                 renderProjects();
@@ -789,9 +833,6 @@
             }
         }
 
-        // ============================================================
-        // 渲染作品
-        // ============================================================
         function renderProjects() {
             if (!allProjects || allProjects.length === 0) {
                 grid.innerHTML = '';
@@ -803,7 +844,6 @@
             statsText.textContent = `共 ${allProjects.length} 个作品`;
 
             const sorted = [...allProjects].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-
             let html = '';
             sorted.forEach(p => {
                 const typeEmoji = {
@@ -838,28 +878,25 @@
                 }
 
                 html += `
-                        <div class="project-card" data-id="${p._id}">
-                            <div class="project-cover">${coverHtml}</div>
-                            <div class="project-body">
-                                <span class="project-type">${p.type || '其他'}</span>
-                                <div class="project-title">${p.title}</div>
-                                <div class="project-desc">${p.desc || '暂无描述'}</div>
-                                ${tagsHtml ? `<div class="project-tags">${tagsHtml}</div>` : ''}
-                                ${linkHtml}
-                                <div class="project-actions">
-                                    <button class="btn btn-sm btn-outline edit-btn" data-id="${p._id}">✏️ 编辑</button>
-                                    <button class="btn btn-sm btn-danger delete-btn" data-id="${p._id}">🗑️ 删除</button>
-                                </div>
+                    <div class="project-card" data-id="${p._id}">
+                        <div class="project-cover">${coverHtml}</div>
+                        <div class="project-body">
+                            <span class="project-type">${p.type || '其他'}</span>
+                            <div class="project-title">${p.title}</div>
+                            <div class="project-desc">${p.desc || '暂无描述'}</div>
+                            ${tagsHtml ? `<div class="project-tags">${tagsHtml}</div>` : ''}
+                            ${linkHtml}
+                            <div class="project-actions">
+                                <button class="btn btn-sm btn-outline edit-btn" data-id="${p._id}">✏️ 编辑</button>
+                                <button class="btn btn-sm btn-danger delete-btn" data-id="${p._id}">🗑️ 删除</button>
                             </div>
                         </div>
-                    `;
+                    </div>
+                `;
             });
             grid.innerHTML = html;
         }
 
-        // ============================================================
-        // 数据库操作
-        // ============================================================
         async function addProject(data) {
             if (!currentUser) return;
             const doc = {
@@ -981,9 +1018,6 @@
             reader.readAsDataURL(file);
         }
 
-        // ============================================================
-        // 表单提交
-        // ============================================================
         projectForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const title = formTitle.value.trim();
@@ -991,7 +1025,6 @@
                 alert('请填写作品名称');
                 return;
             }
-
             const id = editIdInput.value;
             const data = {
                 title: title,
@@ -1002,7 +1035,6 @@
                 url: formUrl.value.trim(),
                 image: currentImageData || formImageUrl.value.trim() || ''
             };
-
             try {
                 if (id) {
                     await updateProject(id, data);
@@ -1020,12 +1052,9 @@
         modalOverlay.addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
-
         addBtn.addEventListener('click', () => openModal(null));
 
-        // ============================================================
         // 编辑/删除事件
-        // ============================================================
         grid.addEventListener('click', function(e) {
             const target = e.target.closest('button');
             if (!target) return;
@@ -1041,7 +1070,7 @@
         });
 
         // ============================================================
-        // 导出/导入
+        // 导出/导入备份
         // ============================================================
         exportBtn.addEventListener('click', function() {
             const data = JSON.stringify(allProjects, null, 2);
