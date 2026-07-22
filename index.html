@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>灵感工坊 · 作品管理</title>
+    <!-- 引入 Firebase v9 模块化 SDK (CDN) -->
+    <script type="module">
+        // 这个 script 会被下文的内联模块使用，我们将在后面统一导入
+    </script>
     <style>
         /* ---------- 全局 ---------- */
         * {
@@ -16,16 +20,118 @@
             background: #0b0d15;
             color: #e5e9f0;
             min-height: 100vh;
-            padding: 2rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
             background: linear-gradient(145deg, #0b0d15 0%, #1a1e2f 100%);
-            background-attachment: fixed;
         }
         .app-wrapper {
+            width: 100%;
             max-width: 1200px;
             margin: 0 auto;
         }
 
-        /* ---------- 导航 ---------- */
+        /* ---------- 登录/注册界面 ---------- */
+        .auth-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 2rem;
+            padding: 2.5rem 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+        }
+        .auth-container h1 {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #b6c8ff, #8a6cff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        .auth-container .sub {
+            text-align: center;
+            color: #7a89aa;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+        .auth-container label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #a4b0cc;
+            margin-bottom: 0.3rem;
+            margin-top: 1rem;
+        }
+        .auth-container input {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border-radius: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .auth-container input:focus {
+            border-color: #8a6cff;
+        }
+        .auth-container .btn {
+            width: 100%;
+            padding: 0.7rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-top: 1.5rem;
+            background: linear-gradient(135deg, #6f55e0, #8a6cff);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(138, 108, 255, 0.3);
+        }
+        .auth-container .btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 24px rgba(138, 108, 255, 0.45);
+        }
+        .auth-container .toggle-link {
+            text-align: center;
+            margin-top: 1.2rem;
+            color: #7a89aa;
+            font-size: 0.9rem;
+        }
+        .auth-container .toggle-link a {
+            color: #8a6cff;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .auth-container .error-msg {
+            color: #ff6b6b;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            min-height: 1.5rem;
+        }
+        .auth-container .success-msg {
+            color: #8affb6;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            min-height: 1.5rem;
+        }
+
+        /* ---------- 主界面（登录后） ---------- */
+        .main-app {
+            display: none;
+        }
+        .main-app.active {
+            display: block;
+        }
+
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -48,14 +154,18 @@
             display: flex;
             gap: 0.8rem;
             flex-wrap: wrap;
+            align-items: center;
         }
-
-        /* ---------- 按钮 ---------- */
+        .user-info {
+            color: #8e9bbe;
+            font-size: 0.9rem;
+            margin-right: 0.5rem;
+        }
         .btn {
-            padding: 0.6rem 1.6rem;
+            padding: 0.5rem 1.4rem;
             border-radius: 60px;
             font-weight: 600;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             border: none;
             cursor: pointer;
             transition: all 0.25s ease;
@@ -69,7 +179,7 @@
             box-shadow: 0 4px 14px rgba(138, 108, 255, 0.3);
         }
         .btn-primary:hover {
-            transform: scale(1.04) translateY(-2px);
+            transform: scale(1.04);
             box-shadow: 0 8px 24px rgba(138, 108, 255, 0.45);
         }
         .btn-danger {
@@ -78,7 +188,6 @@
         }
         .btn-danger:hover {
             background: #e74c3c;
-            transform: scale(1.04);
         }
         .btn-outline {
             background: transparent;
@@ -88,15 +197,10 @@
             background: rgba(255, 255, 255, 0.06);
         }
         .btn-sm {
-            padding: 0.3rem 1rem;
+            padding: 0.25rem 1rem;
             font-size: 0.8rem;
         }
-        .btn-block {
-            width: 100%;
-            justify-content: center;
-        }
 
-        /* ---------- 统计 & 空状态 ---------- */
         .stats {
             color: #7a89aa;
             font-size: 0.9rem;
@@ -117,14 +221,12 @@
             margin-bottom: 0.5rem;
         }
 
-        /* ---------- 作品网格 ---------- */
         .project-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 1.8rem;
             margin-top: 0.5rem;
         }
-
         .project-card {
             background: rgba(255, 255, 255, 0.04);
             border-radius: 1.5rem;
@@ -140,7 +242,6 @@
             border-color: rgba(138, 108, 255, 0.25);
             box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.6);
         }
-
         .project-cover {
             width: 100%;
             height: 180px;
@@ -160,7 +261,6 @@
         .project-cover .placeholder-icon {
             opacity: 0.3;
         }
-
         .project-body {
             padding: 1.2rem 1.4rem 1.4rem;
             flex: 1;
@@ -326,11 +426,17 @@
                 flex-direction: column;
                 align-items: stretch;
             }
+            .toolbar {
+                justify-content: flex-start;
+            }
             .modal {
                 padding: 1.5rem;
             }
             .project-grid {
                 grid-template-columns: 1fr 1fr;
+            }
+            .auth-container {
+                padding: 1.5rem;
             }
         }
         @media (max-width: 420px) {
@@ -342,42 +448,72 @@
 </head>
 <body>
     <div class="app-wrapper">
-        <!-- 导航栏 -->
-        <header class="navbar">
-            <div class="logo">✦ 灵感工坊</div>
-            <div class="toolbar">
-                <button class="btn btn-outline btn-sm" id="exportBtn">📥 导出备份</button>
-                <button class="btn btn-outline btn-sm" id="importBtn">📤 导入备份</button>
-                <button class="btn btn-primary" id="addBtn">＋ 添加作品</button>
+        <!-- ========== 登录 / 注册界面 ========== -->
+        <div id="authContainer" class="auth-container">
+            <h1>✦ 灵感工坊</h1>
+            <div class="sub">登录以管理你的作品</div>
+
+            <!-- 登录表单 -->
+            <form id="loginForm">
+                <label for="loginEmail">邮箱</label>
+                <input type="email" id="loginEmail" placeholder="your@email.com" required />
+                <label for="loginPassword">密码</label>
+                <input type="password" id="loginPassword" placeholder="至少6位" required minlength="6" />
+                <button type="submit" class="btn">登 录</button>
+                <div class="error-msg" id="loginError"></div>
+                <div class="success-msg" id="loginSuccess"></div>
+            </form>
+
+            <div class="toggle-link">
+                还没有账号？ <a id="showRegister">立即注册</a>
             </div>
-            <input type="file" id="importFileInput" accept=".json" style="display:none" />
-        </header>
 
-        <!-- 统计 -->
-        <div class="stats" id="statsText">共 0 个作品</div>
-
-        <!-- 作品网格 -->
-        <div class="project-grid" id="projectGrid">
-            <!-- 由 JS 动态渲染 -->
+            <!-- 注册表单（默认隐藏） -->
+            <form id="registerForm" style="display:none; margin-top: 1.5rem;">
+                <label for="registerEmail">邮箱</label>
+                <input type="email" id="registerEmail" placeholder="your@email.com" required />
+                <label for="registerPassword">密码</label>
+                <input type="password" id="registerPassword" placeholder="至少6位" required minlength="6" />
+                <button type="submit" class="btn">注 册</button>
+                <div class="error-msg" id="registerError"></div>
+                <div class="success-msg" id="registerSuccess"></div>
+            </form>
+            <div class="toggle-link" id="showLoginLink" style="display:none;">
+                已有账号？ <a id="showLogin">去登录</a>
+            </div>
         </div>
 
-        <!-- 空状态（默认隐藏） -->
-        <div class="empty-state" id="emptyState" style="display:none;">
-            <span class="big-icon">🖼️</span>
-            <h3>还没有作品</h3>
-            <p>点击「添加作品」开始记录你的创作吧！</p>
+        <!-- ========== 主应用（登录后） ========== -->
+        <div id="mainApp" class="main-app">
+            <header class="navbar">
+                <div class="logo">✦ 灵感工坊</div>
+                <div class="toolbar">
+                    <span class="user-info" id="userEmail"></span>
+                    <button class="btn btn-outline btn-sm" id="exportBtn">📥 导出备份</button>
+                    <button class="btn btn-outline btn-sm" id="importBtn">📤 导入备份</button>
+                    <button class="btn btn-primary" id="addBtn">＋ 添加作品</button>
+                    <button class="btn btn-danger btn-sm" id="logoutBtn">退出</button>
+                </div>
+                <input type="file" id="importFileInput" accept=".json" style="display:none" />
+            </header>
+
+            <div class="stats" id="statsText">加载中...</div>
+            <div class="project-grid" id="projectGrid"></div>
+            <div class="empty-state" id="emptyState" style="display:none;">
+                <span class="big-icon">🖼️</span>
+                <h3>还没有作品</h3>
+                <p>点击「添加作品」开始记录你的创作吧！</p>
+            </div>
         </div>
 
-        <!-- ====== 模态框（添加 / 编辑） ====== -->
+        <!-- ========== 模态框（添加/编辑） ========== -->
         <div class="modal-overlay" id="modalOverlay">
             <div class="modal">
                 <div class="modal-title" id="modalTitle">添加作品</div>
                 <form id="projectForm">
                     <input type="hidden" id="editId" value="" />
-
                     <label for="formTitle">作品名称 *</label>
                     <input type="text" id="formTitle" placeholder="例如：个人品牌官网" required />
-
                     <label for="formType">作品类型</label>
                     <select id="formType">
                         <option value="网站">🌐 网站</option>
@@ -388,16 +524,12 @@
                         <option value="音乐">🎵 音乐</option>
                         <option value="其他">📦 其他</option>
                     </select>
-
                     <label for="formDesc">简短描述</label>
                     <textarea id="formDesc" placeholder="简单介绍这个作品..."></textarea>
-
                     <label for="formTags">技术标签（用逗号分隔）</label>
                     <input type="text" id="formTags" placeholder="例如：React, Figma, Tailwind" />
-
                     <label for="formUrl">项目链接（可选）</label>
                     <input type="url" id="formUrl" placeholder="https://example.com" />
-
                     <label for="formImage">封面图片（支持上传或粘贴 URL）</label>
                     <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                         <input type="url" id="formImageUrl" placeholder="https://... 图片地址" style="flex:1;" />
@@ -409,7 +541,6 @@
                     <div class="preview-img" id="formImagePreview">
                         <img id="previewImg" src="" alt="封面预览" />
                     </div>
-
                     <div class="form-actions">
                         <button type="button" class="btn btn-outline" id="cancelBtn">取消</button>
                         <button type="submit" class="btn btn-primary" id="submitBtn">保存作品</button>
@@ -419,385 +550,511 @@
         </div>
     </div>
 
-    <script>
-        (function() {
-            'use strict';
+    <!-- ========== Firebase 配置与逻辑 ========== -->
+    <script type="importmap">
+        {
+            "imports": {
+                "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
+                "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
+                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
+            }
+        }
+    </script>
 
-            // ---------- 数据层 ----------
-            const STORAGE_KEY = 'my_portfolio_projects';
-            let projects = [];
+    <script type="module">
+        // ----- 导入 Firebase -----
+        import { initializeApp } from 'firebase/app';
+        import {
+            getAuth,
+            createUserWithEmailAndPassword,
+            signInWithEmailAndPassword,
+            onAuthStateChanged,
+            signOut
+        } from 'firebase/auth';
+        import {
+            getFirestore,
+            collection,
+            doc,
+            getDocs,
+            addDoc,
+            updateDoc,
+            deleteDoc,
+            query,
+            where,
+            onSnapshot
+        } from 'firebase/firestore';
 
-            // 加载本地数据
-            function loadProjects() {
-                const stored = localStorage.getItem(STORAGE_KEY);
-                if (stored) {
-                    try {
-                        projects = JSON.parse(stored);
-                        // 确保每个项目都有 id
-                        projects = projects.filter(p => p.id);
-                    } catch (e) {
-                        projects = [];
-                    }
+        // ----- 🔥 在这里填入你的 Firebase 配置（从 Firebase 控制台获取） -----
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        // 初始化 Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ----- DOM 引用 -----
+        const authContainer = document.getElementById('authContainer');
+        const mainApp = document.getElementById('mainApp');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const showRegisterLink = document.getElementById('showRegister');
+        const showLoginLink = document.getElementById('showLoginLink');
+        const showLoginBtn = document.getElementById('showLogin');
+        const loginError = document.getElementById('loginError');
+        const loginSuccess = document.getElementById('loginSuccess');
+        const registerError = document.getElementById('registerError');
+        const registerSuccess = document.getElementById('registerSuccess');
+        const userEmailSpan = document.getElementById('userEmail');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // 作品管理相关
+        const grid = document.getElementById('projectGrid');
+        const emptyState = document.getElementById('emptyState');
+        const statsText = document.getElementById('statsText');
+        const addBtn = document.getElementById('addBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const importBtn = document.getElementById('importBtn');
+        const importFileInput = document.getElementById('importFileInput');
+
+        // 模态框
+        const modalOverlay = document.getElementById('modalOverlay');
+        const modalTitle = document.getElementById('modalTitle');
+        const projectForm = document.getElementById('projectForm');
+        const editIdInput = document.getElementById('editId');
+        const formTitle = document.getElementById('formTitle');
+        const formType = document.getElementById('formType');
+        const formDesc = document.getElementById('formDesc');
+        const formTags = document.getElementById('formTags');
+        const formUrl = document.getElementById('formUrl');
+        const formImageUrl = document.getElementById('formImageUrl');
+        const formImageFile = document.getElementById('formImageFile');
+        const previewContainer = document.getElementById('formImagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const submitBtn = document.getElementById('submitBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        // ----- 全局状态 -----
+        let currentUser = null;
+        let allProjects = [];
+        let unsubscribeProjects = null;
+
+        // ----- 切换登录/注册表单 -----
+        showRegisterLink.addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            showRegisterLink.parentElement.style.display = 'none';
+            showLoginLink.style.display = 'block';
+            loginError.textContent = '';
+            loginSuccess.textContent = '';
+            registerError.textContent = '';
+            registerSuccess.textContent = '';
+        });
+        showLoginBtn.addEventListener('click', () => {
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            showLoginLink.style.display = 'none';
+            showRegisterLink.parentElement.style.display = 'block';
+            registerError.textContent = '';
+            registerSuccess.textContent = '';
+            loginError.textContent = '';
+            loginSuccess.textContent = '';
+        });
+
+        // ----- 注册 -----
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            registerError.textContent = '';
+            registerSuccess.textContent = '';
+            try {
+                const userCred = await createUserWithEmailAndPassword(auth, email, password);
+                registerSuccess.textContent = '注册成功！正在登录...';
+                // 自动登录由 onAuthStateChanged 处理
+            } catch (err) {
+                registerError.textContent = err.message;
+            }
+        });
+
+        // ----- 登录 -----
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            loginError.textContent = '';
+            loginSuccess.textContent = '';
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                loginSuccess.textContent = '登录成功！';
+            } catch (err) {
+                loginError.textContent = err.message;
+            }
+        });
+
+        // ----- 退出 -----
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+        });
+
+        // ----- 监听认证状态 -----
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                authContainer.style.display = 'none';
+                mainApp.classList.add('active');
+                userEmailSpan.textContent = user.email;
+                // 开始监听该用户的作品
+                listenToProjects(user.uid);
+            } else {
+                currentUser = null;
+                authContainer.style.display = 'block';
+                mainApp.classList.remove('active');
+                // 取消监听
+                if (unsubscribeProjects) {
+                    unsubscribeProjects();
+                    unsubscribeProjects = null;
+                }
+                // 清空数据
+                allProjects = [];
+                renderProjects();
+                // 重置登录/注册表单显示
+                loginForm.style.display = 'block';
+                registerForm.style.display = 'none';
+                showRegisterLink.parentElement.style.display = 'block';
+                showLoginLink.style.display = 'none';
+                loginError.textContent = '';
+                loginSuccess.textContent = '';
+                registerError.textContent = '';
+                registerSuccess.textContent = '';
+                // 清空输入
+                document.getElementById('loginEmail').value = '';
+                document.getElementById('loginPassword').value = '';
+                document.getElementById('registerEmail').value = '';
+                document.getElementById('registerPassword').value = '';
+            }
+        });
+
+        // ----- Firestore 监听 (实时更新) -----
+        function listenToProjects(uid) {
+            const q = query(collection(db, 'projects'), where('userId', '==', uid));
+            unsubscribeProjects = onSnapshot(q, (snapshot) => {
+                allProjects = [];
+                snapshot.forEach((doc) => {
+                    allProjects.push({ id: doc.id, ...doc.data() });
+                });
+                renderProjects();
+            }, (error) => {
+                console.error('监听失败:', error);
+                statsText.textContent = '加载数据失败，请刷新重试。';
+            });
+        }
+
+        // ----- 渲染作品 -----
+        function renderProjects() {
+            if (allProjects.length === 0) {
+                grid.innerHTML = '';
+                emptyState.style.display = 'block';
+                statsText.textContent = '共 0 个作品';
+                return;
+            }
+            emptyState.style.display = 'none';
+            statsText.textContent = `共 ${allProjects.length} 个作品`;
+
+            const sorted = [...allProjects].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+            let html = '';
+            sorted.forEach(p => {
+                const typeEmoji = {
+                    '网站': '🌐',
+                    'App': '📱',
+                    '设计': '🎨',
+                    '文章': '✍️',
+                    '视频': '🎬',
+                    '音乐': '🎵',
+                    '其他': '📦'
+                } [p.type] || '📦';
+
+                let coverHtml = '';
+                if (p.image && p.image.startsWith('data:image')) {
+                    coverHtml =
+                    `<img src="${p.image}" alt="${p.title}" />`;
+                } else if (p.image && p.image.startsWith('http')) {
+                    coverHtml =
+                        `<img src="${p.image}" alt="${p.title}" onerror="this.style.display='none'" />`;
                 } else {
-                    // 首次使用，添加几个示例
-                    projects = [{
-                        id: Date.now() + 1,
-                        title: '品牌视觉系统',
-                        type: '设计',
-                        desc: '极简主义与色彩心理学的落地实践，包含完整的VI手册。',
-                        tags: ['Figma', 'Adobe', 'Branding'],
-                        url: 'https://behance.net',
-                        image: ''
-                    }, {
-                        id: Date.now() + 2,
-                        title: '智能数据看板',
-                        type: '网站',
-                        desc: '实时数据可视化仪表盘，支持多端自适应。',
-                        tags: ['Vue', 'D3.js', 'ECharts'],
-                        url: 'https://demo.com',
-                        image: ''
-                    }];
-                    saveProjects();
+                    coverHtml =
+                        `<span class="placeholder-icon">${typeEmoji}</span>`;
                 }
-                render();
-            }
 
-            function saveProjects() {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
-                render();
-            }
-
-            // ---------- 渲染 ----------
-            const grid = document.getElementById('projectGrid');
-            const emptyState = document.getElementById('emptyState');
-            const statsText = document.getElementById('statsText');
-
-            function render() {
-                if (projects.length === 0) {
-                    grid.innerHTML = '';
-                    emptyState.style.display = 'block';
-                    statsText.textContent = '共 0 个作品';
-                    return;
+                let tagsHtml = '';
+                if (p.tags && p.tags.length) {
+                    tagsHtml = p.tags.map(t => `<span>${t.trim()}</span>`).join('');
                 }
-                emptyState.style.display = 'none';
-                statsText.textContent = `共 ${projects.length} 个作品`;
 
-                // 按 id 倒序排列（最新的在前）
-                const sorted = [...projects].sort((a, b) => b.id - a.id);
+                let linkHtml = '';
+                if (p.url && p.url.trim()) {
+                    linkHtml =
+                        `<a href="${p.url}" target="_blank" class="project-link">🔗 查看项目</a>`;
+                }
 
-                let html = '';
-                sorted.forEach(p => {
-                    const typeEmoji = {
-                        '网站': '🌐',
-                        'App': '📱',
-                        '设计': '🎨',
-                        '文章': '✍️',
-                        '视频': '🎬',
-                        '音乐': '🎵',
-                        '其他': '📦'
-                    } [p.type] || '📦';
-
-                    // 封面处理
-                    let coverHtml = '';
-                    if (p.image && p.image.startsWith('data:image')) {
-                        coverHtml =
-                            `<img src="${p.image}" alt="${p.title}" />`;
-                    } else if (p.image && p.image.startsWith('http')) {
-                        coverHtml =
-                            `<img src="${p.image}" alt="${p.title}" onerror="this.style.display='none'" />`;
-                    } else {
-                        coverHtml =
-                            `<span class="placeholder-icon">${typeEmoji}</span>`;
-                    }
-
-                    // 标签
-                    let tagsHtml = '';
-                    if (p.tags && p.tags.length) {
-                        tagsHtml = p.tags.map(t =>
-                            `<span>${t.trim()}</span>`
-                        ).join('');
-                    }
-
-                    // 链接
-                    let linkHtml = '';
-                    if (p.url && p.url.trim()) {
-                        linkHtml =
-                            `<a href="${p.url}" target="_blank" class="project-link">🔗 查看项目</a>`;
-                    }
-
-                    html += `
-                        <div class="project-card" data-id="${p.id}">
-                            <div class="project-cover">${coverHtml}</div>
-                            <div class="project-body">
-                                <span class="project-type">${p.type || '其他'}</span>
-                                <div class="project-title">${p.title}</div>
-                                <div class="project-desc">${p.desc || '暂无描述'}</div>
-                                ${tagsHtml ? `<div class="project-tags">${tagsHtml}</div>` : ''}
-                                ${linkHtml}
-                                <div class="project-actions">
-                                    <button class="btn btn-sm btn-outline edit-btn" data-id="${p.id}">✏️ 编辑</button>
-                                    <button class="btn btn-sm btn-danger delete-btn" data-id="${p.id}">🗑️ 删除</button>
-                                </div>
+                html += `
+                    <div class="project-card" data-id="${p.id}">
+                        <div class="project-cover">${coverHtml}</div>
+                        <div class="project-body">
+                            <span class="project-type">${p.type || '其他'}</span>
+                            <div class="project-title">${p.title}</div>
+                            <div class="project-desc">${p.desc || '暂无描述'}</div>
+                            ${tagsHtml ? `<div class="project-tags">${tagsHtml}</div>` : ''}
+                            ${linkHtml}
+                            <div class="project-actions">
+                                <button class="btn btn-sm btn-outline edit-btn" data-id="${p.id}">✏️ 编辑</button>
+                                <button class="btn btn-sm btn-danger delete-btn" data-id="${p.id}">🗑️ 删除</button>
                             </div>
                         </div>
-                    `;
-                });
-                grid.innerHTML = html;
-            }
+                    </div>
+                `;
+            });
+            grid.innerHTML = html;
+        }
 
-            // ---------- CRUD 操作 ----------
-            function addProject(data) {
-                const newProject = {
-                    id: Date.now(),
-                    title: data.title.trim(),
-                    type: data.type || '其他',
-                    desc: data.desc ? data.desc.trim() : '',
-                    tags: data.tags ? data.tags.split(',').map(s => s.trim()).filter(Boolean) : [],
-                    url: data.url ? data.url.trim() : '',
-                    image: data.image || ''
-                };
-                projects.push(newProject);
-                saveProjects();
-                return newProject;
-            }
+        // ----- 添加/更新/删除（Firestore）-----
+        async function addProjectToFirestore(data) {
+            if (!currentUser) return;
+            const docRef = await addDoc(collection(db, 'projects'), {
+                userId: currentUser.uid,
+                title: data.title,
+                type: data.type || '其他',
+                desc: data.desc || '',
+                tags: data.tags || [],
+                url: data.url || '',
+                image: data.image || '',
+                createdAt: Date.now()
+            });
+            return docRef.id;
+        }
 
-            function updateProject(id, data) {
-                const index = projects.findIndex(p => p.id === id);
-                if (index === -1) return false;
-                const p = projects[index];
-                p.title = data.title.trim();
-                p.type = data.type || '其他';
-                p.desc = data.desc ? data.desc.trim() : '';
-                p.tags = data.tags ? data.tags.split(',').map(s => s.trim()).filter(Boolean) : [];
-                p.url = data.url ? data.url.trim() : '';
-                if (data.image) p.image = data.image;
-                saveProjects();
-                return true;
-            }
+        async function updateProjectInFirestore(id, data) {
+            if (!currentUser) return;
+            const docRef = doc(db, 'projects', id);
+            await updateDoc(docRef, {
+                title: data.title,
+                type: data.type || '其他',
+                desc: data.desc || '',
+                tags: data.tags || [],
+                url: data.url || '',
+                image: data.image || ''
+            });
+        }
 
-            function deleteProject(id) {
-                if (!confirm('确定要删除这个作品吗？')) return;
-                projects = projects.filter(p => p.id !== id);
-                saveProjects();
-            }
+        async function deleteProjectFromFirestore(id) {
+            if (!currentUser) return;
+            if (!confirm('确定删除这个作品吗？')) return;
+            const docRef = doc(db, 'projects', id);
+            await deleteDoc(docRef);
+        }
 
-            // ---------- 模态框逻辑 ----------
-            const overlay = document.getElementById('modalOverlay');
-            const modalTitle = document.getElementById('modalTitle');
-            const form = document.getElementById('projectForm');
-            const editIdInput = document.getElementById('editId');
-            const titleInput = document.getElementById('formTitle');
-            const typeSelect = document.getElementById('formType');
-            const descInput = document.getElementById('formDesc');
-            const tagsInput = document.getElementById('formTags');
-            const urlInput = document.getElementById('formUrl');
-            const imageUrlInput = document.getElementById('formImageUrl');
-            const imageFileInput = document.getElementById('formImageFile');
-            const previewContainer = document.getElementById('formImagePreview');
-            const previewImg = document.getElementById('previewImg');
-            const submitBtn = document.getElementById('submitBtn');
-            const cancelBtn = document.getElementById('cancelBtn');
+        // ----- 模态框逻辑 -----
+        let currentImageData = '';
 
-            let currentImageData = ''; // 暂存图片 base64 或 url
+        function openModal(projectData = null) {
+            currentImageData = '';
+            previewContainer.style.display = 'none';
+            previewImg.src = '';
 
-            function openModal(projectData = null) {
-                currentImageData = '';
+            if (projectData) {
+                modalTitle.textContent = '编辑作品';
+                editIdInput.value = projectData.id;
+                formTitle.value = projectData.title || '';
+                formType.value = projectData.type || '其他';
+                formDesc.value = projectData.desc || '';
+                formTags.value = (projectData.tags || []).join(', ');
+                formUrl.value = projectData.url || '';
+                if (projectData.image) {
+                    currentImageData = projectData.image;
+                    previewImg.src = projectData.image;
+                    previewContainer.style.display = 'block';
+                    formImageUrl.value = '';
+                } else {
+                    formImageUrl.value = '';
+                }
+                submitBtn.textContent = '更新作品';
+            } else {
+                modalTitle.textContent = '添加作品';
+                editIdInput.value = '';
+                projectForm.reset();
+                formType.value = '网站';
+                submitBtn.textContent = '保存作品';
+                formImageUrl.value = '';
                 previewContainer.style.display = 'none';
-                previewImg.src = '';
+            }
+            modalOverlay.classList.add('active');
+            formImageFile.value = '';
+        }
 
-                if (projectData) {
-                    // 编辑模式
-                    modalTitle.textContent = '编辑作品';
-                    editIdInput.value = projectData.id;
-                    titleInput.value = projectData.title || '';
-                    typeSelect.value = projectData.type || '其他';
-                    descInput.value = projectData.desc || '';
-                    tagsInput.value = (projectData.tags || []).join(', ');
-                    urlInput.value = projectData.url || '';
-                    if (projectData.image) {
-                        currentImageData = projectData.image;
-                        previewImg.src = projectData.image;
-                        previewContainer.style.display = 'block';
-                        imageUrlInput.value = '';
-                    } else {
-                        imageUrlInput.value = '';
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+        }
+
+        // 预览图片 URL
+        formImageUrl.addEventListener('input', function() {
+            const url = this.value.trim();
+            if (url && (url.startsWith('http') || url.startsWith('data:image'))) {
+                currentImageData = url;
+                previewImg.src = url;
+                previewContainer.style.display = 'block';
+            } else {
+                previewContainer.style.display = 'none';
+            }
+        });
+
+        // 压缩并预览上传图片
+        formImageFile.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            compressImage(file, 800, 0.7, function(base64) {
+                currentImageData = base64;
+                previewImg.src = base64;
+                previewContainer.style.display = 'block';
+                formImageUrl.value = '';
+            });
+        });
+
+        function compressImage(file, maxWidth, quality, callback) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    if (width > maxWidth) {
+                        height = (maxWidth / width) * height;
+                        width = maxWidth;
                     }
-                    submitBtn.textContent = '更新作品';
-                } else {
-                    // 新增模式
-                    modalTitle.textContent = '添加作品';
-                    editIdInput.value = '';
-                    form.reset();
-                    typeSelect.value = '网站';
-                    submitBtn.textContent = '保存作品';
-                    imageUrlInput.value = '';
-                    previewContainer.style.display = 'none';
-                }
-                overlay.classList.add('active');
-                // 清空文件选择
-                imageFileInput.value = '';
-            }
-
-            function closeModal() {
-                overlay.classList.remove('active');
-            }
-
-            // 预览图片（从 URL）
-            imageUrlInput.addEventListener('input', function() {
-                const url = this.value.trim();
-                if (url && (url.startsWith('http') || url.startsWith('data:image'))) {
-                    currentImageData = url;
-                    previewImg.src = url;
-                    previewContainer.style.display = 'block';
-                } else {
-                    previewContainer.style.display = 'none';
-                }
-            });
-
-            // 预览图片（从文件上传 + 压缩）
-            imageFileInput.addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                // 压缩图片
-                compressImage(file, 800, 0.7, function(base64) {
-                    currentImageData = base64;
-                    previewImg.src = base64;
-                    previewContainer.style.display = 'block';
-                    imageUrlInput.value = ''; // 清空 URL 输入
-                });
-            });
-
-            // 压缩图片函数
-            function compressImage(file, maxWidth, quality, callback) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        if (width > maxWidth) {
-                            height = (maxWidth / width) * height;
-                            width = maxWidth;
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        const dataUrl = canvas.toDataURL('image/jpeg', quality);
-                        callback(dataUrl);
-                    };
-                    img.src = e.target.result;
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                    callback(dataUrl);
                 };
-                reader.readAsDataURL(file);
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 提交表单
+        projectForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = formTitle.value.trim();
+            if (!title) {
+                alert('请填写作品名称');
+                return;
             }
 
-            // ---------- 表单提交 ----------
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                const title = titleInput.value.trim();
-                if (!title) {
-                    alert('请填写作品名称');
-                    return;
-                }
+            const id = editIdInput.value;
+            const data = {
+                title: title,
+                type: formType.value,
+                desc: formDesc.value.trim(),
+                tags: formTags.value.trim() ? formTags.value.split(',').map(s => s.trim()).filter(Boolean) :
+                    [],
+                url: formUrl.value.trim(),
+                image: currentImageData || formImageUrl.value.trim() || ''
+            };
 
-                const id = editIdInput.value ? Number(editIdInput.value) : null;
-                const data = {
-                    title: title,
-                    type: typeSelect.value,
-                    desc: descInput.value.trim(),
-                    tags: tagsInput.value.trim(),
-                    url: urlInput.value.trim(),
-                    image: currentImageData || ''
-                };
-
-                // 如果当前没有图片，但 URL 输入框有值，取 URL 输入框
-                if (!data.image && imageUrlInput.value.trim()) {
-                    data.image = imageUrlInput.value.trim();
-                }
-
+            try {
                 if (id) {
-                    updateProject(id, data);
+                    await updateProjectInFirestore(id, data);
                 } else {
-                    addProject(data);
+                    await addProjectToFirestore(data);
                 }
                 closeModal();
-            });
+            } catch (err) {
+                alert('保存失败：' + err.message);
+            }
+        });
 
-            // ---------- 事件绑定 ----------
-            document.getElementById('addBtn').addEventListener('click', function() {
-                openModal(null);
-            });
+        // 取消按钮
+        cancelBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
 
-            cancelBtn.addEventListener('click', closeModal);
+        // 添加按钮
+        addBtn.addEventListener('click', () => openModal(null));
 
-            // 点击遮罩关闭
-            overlay.addEventListener('click', function(e) {
-                if (e.target === this) closeModal();
-            });
+        // 编辑/删除 事件委托
+        grid.addEventListener('click', function(e) {
+            const target = e.target.closest('button');
+            if (!target) return;
+            if (target.classList.contains('edit-btn')) {
+                const id = target.dataset.id;
+                const project = allProjects.find(p => p.id === id);
+                if (project) openModal(project);
+            }
+            if (target.classList.contains('delete-btn')) {
+                const id = target.dataset.id;
+                deleteProjectFromFirestore(id);
+            }
+        });
 
-            // 委托事件：编辑 / 删除
-            grid.addEventListener('click', function(e) {
-                const target = e.target.closest('button');
-                if (!target) return;
+        // ----- 导出/导入备份（仅针对当前用户）-----
+        exportBtn.addEventListener('click', function() {
+            const data = JSON.stringify(allProjects, null, 2);
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `我的作品集_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
 
-                // 编辑
-                if (target.classList.contains('edit-btn')) {
-                    const id = Number(target.dataset.id);
-                    const project = projects.find(p => p.id === id);
-                    if (project) openModal(project);
-                }
-                // 删除
-                if (target.classList.contains('delete-btn')) {
-                    const id = Number(target.dataset.id);
-                    deleteProject(id);
-                }
-            });
+        importBtn.addEventListener('click', () => importFileInput.click());
 
-            // ---------- 导出 / 导入备份 ----------
-            document.getElementById('exportBtn').addEventListener('click', function() {
-                const data = JSON.stringify(projects, null, 2);
-                const blob = new Blob([data], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `我的作品集_${new Date().toISOString().slice(0,10)}.json`;
-                a.click();
-                URL.revokeObjectURL(url);
-            });
-
-            document.getElementById('importBtn').addEventListener('click', function() {
-                document.getElementById('importFileInput').click();
-            });
-
-            document.getElementById('importFileInput').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    try {
-                        const imported = JSON.parse(ev.target.result);
-                        if (Array.isArray(imported) && imported.length >= 0) {
-                            if (confirm(`即将导入 ${imported.length} 个作品，会覆盖当前所有数据，确定吗？`)) {
-                                projects = imported;
-                                saveProjects();
-                                alert('导入成功！');
-                            }
-                        } else {
-                            alert('无效的备份文件');
-                        }
-                    } catch (err) {
-                        alert('文件解析失败，请确认是有效的 JSON 备份。');
+        importFileInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(ev) {
+                try {
+                    const imported = JSON.parse(ev.target.result);
+                    if (!Array.isArray(imported)) {
+                        alert('无效的备份文件');
+                        return;
                     }
-                };
-                reader.readAsText(file);
-                this.value = ''; // 允许重复选择同一文件
-            });
+                    if (!confirm(`即将导入 ${imported.length} 个作品，会添加到你的作品列表中（不会删除现有作品）。确定吗？`)) {
+                        return;
+                    }
+                    // 逐个添加
+                    for (const item of imported) {
+                        await addProjectToFirestore({
+                            title: item.title || '未命名',
+                            type: item.type || '其他',
+                            desc: item.desc || '',
+                            tags: item.tags || [],
+                            url: item.url || '',
+                            image: item.image || ''
+                        });
+                    }
+                    alert('导入成功！');
+                } catch (err) {
+                    alert('文件解析失败：' + err.message);
+                }
+            };
+            reader.readAsText(file);
+            this.value = '';
+        });
 
-            // ---------- 初始化 ----------
-            loadProjects();
-
-        })();
+        console.log('🔥 请将 firebaseConfig 替换为你自己的配置！');
     </script>
 </body>
 </html>
