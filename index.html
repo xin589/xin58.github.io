@@ -5,12 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>灵感工坊 · 作品管理</title>
     <style>
-        /* 样式保持不变，沿用之前的 */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ---------- 全局样式 ---------- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
             background: #0b0d15;
@@ -22,18 +18,16 @@
             padding: 1.5rem;
             background: linear-gradient(145deg, #0b0d15 0%, #1a1e2f 100%);
         }
-        .app-wrapper {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        .app-wrapper { width: 100%; max-width: 1200px; margin: 0 auto; }
+
+        /* ---------- 登录界面 ---------- */
         .auth-container {
-            max-width: 440px;
+            max-width: 400px;
             margin: 0 auto;
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.04);
             border-radius: 2rem;
             padding: 2.5rem 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255,255,255,0.06);
             backdrop-filter: blur(12px);
         }
         .auth-container h1 {
@@ -64,16 +58,14 @@
             width: 100%;
             padding: 0.7rem 1rem;
             border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0,0,0,0.3);
             color: #fff;
             font-size: 0.95rem;
             outline: none;
             transition: border 0.2s;
         }
-        .auth-container input:focus {
-            border-color: #8a6cff;
-        }
+        .auth-container input:focus { border-color: #8a6cff; }
         .auth-container .btn {
             width: 100%;
             padding: 0.7rem;
@@ -83,42 +75,22 @@
             border: none;
             cursor: pointer;
             transition: all 0.25s ease;
-            margin-top: 1rem;
+            margin-top: 1.5rem;
             background: linear-gradient(135deg, #6f55e0, #8a6cff);
             color: #fff;
-            box-shadow: 0 4px 14px rgba(138, 108, 255, 0.3);
+            box-shadow: 0 4px 14px rgba(138,108,255,0.3);
         }
         .auth-container .btn:hover {
             transform: scale(1.02);
-            box-shadow: 0 8px 24px rgba(138, 108, 255, 0.45);
+            box-shadow: 0 8px 24px rgba(138,108,255,0.45);
         }
-        .auth-container .btn-outline-sm {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: #d0d9f0;
-            padding: 0.4rem 0.8rem;
-            border-radius: 60px;
-            font-size: 0.75rem;
-            cursor: pointer;
-            transition: 0.2s;
-            white-space: nowrap;
-            height: 38px;
-            line-height: 1;
-        }
-        .auth-container .btn-outline-sm:hover {
-            background: rgba(255, 255, 255, 0.06);
-        }
-        .auth-container .btn-outline-sm:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        .auth-container .toggle-link {
+        .auth-container .helper {
             text-align: center;
-            margin-top: 1.2rem;
+            margin-top: 1rem;
             color: #7a89aa;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
-        .auth-container .toggle-link a {
+        .auth-container .helper a {
             color: #8a6cff;
             cursor: pointer;
             text-decoration: underline;
@@ -137,26 +109,10 @@
             text-align: center;
             min-height: 1.5rem;
         }
-        .code-row {
-            display: flex;
-            gap: 0.6rem;
-            align-items: center;
-        }
-        .code-row input {
-            flex: 1;
-            min-width: 0;
-        }
-        .code-row button {
-            flex-shrink: 0;
-            margin-top: 0;
-        }
 
-        .main-app {
-            display: none;
-        }
-        .main-app.active {
-            display: block;
-        }
+        /* ---------- 主界面（登录后） ---------- */
+        .main-app { display: none; }
+        .main-app.active { display: block; }
 
         .navbar {
             display: flex;
@@ -165,7 +121,7 @@
             flex-wrap: wrap;
             gap: 1rem;
             padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
             margin-bottom: 2rem;
         }
         .logo {
@@ -182,11 +138,7 @@
             flex-wrap: wrap;
             align-items: center;
         }
-        .user-info {
-            color: #8e9bbe;
-            font-size: 0.9rem;
-            margin-right: 0.5rem;
-        }
+        .user-info { color: #8e9bbe; font-size: 0.9rem; margin-right: 0.5rem; }
         .btn {
             padding: 0.5rem 1.4rem;
             border-radius: 60px;
@@ -202,50 +154,23 @@
         .btn-primary {
             background: linear-gradient(135deg, #6f55e0, #8a6cff);
             color: #fff;
-            box-shadow: 0 4px 14px rgba(138, 108, 255, 0.3);
+            box-shadow: 0 4px 14px rgba(138,108,255,0.3);
         }
-        .btn-primary:hover {
-            transform: scale(1.04);
-            box-shadow: 0 8px 24px rgba(138, 108, 255, 0.45);
-        }
-        .btn-danger {
-            background: #c0392b;
-            color: #fff;
-        }
-        .btn-danger:hover {
-            background: #e74c3c;
-        }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-        .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.06);
-        }
-        .btn-sm {
-            padding: 0.25rem 1rem;
-            font-size: 0.8rem;
-        }
+        .btn-primary:hover { transform: scale(1.04); box-shadow: 0 8px 24px rgba(138,108,255,0.45); }
+        .btn-danger { background: #c0392b; color: #fff; }
+        .btn-danger:hover { background: #e74c3c; }
+        .btn-outline { background: transparent; border: 1px solid rgba(255,255,255,0.15); }
+        .btn-outline:hover { background: rgba(255,255,255,0.06); }
+        .btn-sm { padding: 0.25rem 1rem; font-size: 0.8rem; }
 
-        .stats {
-            color: #7a89aa;
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
-        }
+        .stats { color: #7a89aa; font-size: 0.9rem; margin-bottom: 1.5rem; }
         .empty-state {
             text-align: center;
             padding: 4rem 2rem;
             color: #7a89aa;
         }
-        .empty-state .big-icon {
-            font-size: 4rem;
-            display: block;
-            margin-bottom: 1rem;
-        }
-        .empty-state h3 {
-            color: #e5e9f0;
-            margin-bottom: 0.5rem;
-        }
+        .empty-state .big-icon { font-size: 4rem; display: block; margin-bottom: 1rem; }
+        .empty-state h3 { color: #e5e9f0; margin-bottom: 0.5rem; }
 
         .project-grid {
             display: grid;
@@ -254,9 +179,9 @@
             margin-top: 0.5rem;
         }
         .project-card {
-            background: rgba(255, 255, 255, 0.04);
+            background: rgba(255,255,255,0.04);
             border-radius: 1.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255,255,255,0.06);
             overflow: hidden;
             transition: all 0.3s ease;
             display: flex;
@@ -264,9 +189,9 @@
         }
         .project-card:hover {
             transform: translateY(-6px);
-            background: rgba(255, 255, 255, 0.07);
-            border-color: rgba(138, 108, 255, 0.25);
-            box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.6);
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(138,108,255,0.25);
+            box-shadow: 0 12px 30px -12px rgba(0,0,0,0.6);
         }
         .project-cover {
             width: 100%;
@@ -279,14 +204,8 @@
             overflow: hidden;
             flex-shrink: 0;
         }
-        .project-cover img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .project-cover .placeholder-icon {
-            opacity: 0.3;
-        }
+        .project-cover img { width: 100%; height: 100%; object-fit: cover; }
+        .project-cover .placeholder-icon { opacity: 0.3; }
         .project-body {
             padding: 1.2rem 1.4rem 1.4rem;
             flex: 1;
@@ -296,18 +215,14 @@
         .project-type {
             display: inline-block;
             font-size: 0.7rem;
-            background: rgba(138, 108, 255, 0.15);
+            background: rgba(138,108,255,0.15);
             color: #b6a6ff;
             padding: 0.15rem 0.8rem;
             border-radius: 20px;
             align-self: flex-start;
             margin-bottom: 0.5rem;
         }
-        .project-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 0.3rem;
-        }
+        .project-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 0.3rem; }
         .project-desc {
             font-size: 0.9rem;
             color: #8e9bbe;
@@ -326,7 +241,7 @@
             margin-bottom: 0.8rem;
         }
         .project-tags span {
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(255,255,255,0.06);
             padding: 0.1rem 0.7rem;
             border-radius: 12px;
             font-size: 0.7rem;
@@ -340,17 +255,16 @@
             margin-bottom: 0.8rem;
             word-break: break-all;
         }
-        .project-link:hover {
-            text-decoration: underline;
-        }
+        .project-link:hover { text-decoration: underline; }
         .project-actions {
             display: flex;
             gap: 0.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid rgba(255,255,255,0.05);
             padding-top: 0.8rem;
             margin-top: auto;
         }
 
+        /* 模态框 */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -358,32 +272,26 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0,0,0,0.7);
             backdrop-filter: blur(6px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
             padding: 1.5rem;
         }
-        .modal-overlay.active {
-            display: flex;
-        }
+        .modal-overlay.active { display: flex; }
         .modal {
             background: #1a1e2f;
             border-radius: 2rem;
             max-width: 560px;
             width: 100%;
             padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.6);
             max-height: 90vh;
             overflow-y: auto;
         }
-        .modal-title {
-            font-size: 1.6rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-        }
+        .modal-title { font-size: 1.6rem; font-weight: 600; margin-bottom: 1.5rem; }
         .modal label {
             display: block;
             font-size: 0.85rem;
@@ -392,29 +300,20 @@
             margin-bottom: 0.3rem;
             margin-top: 1rem;
         }
-        .modal input,
-        .modal select,
-        .modal textarea {
+        .modal input, .modal select, .modal textarea {
             width: 100%;
             padding: 0.7rem 1rem;
             border-radius: 1rem;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0,0,0,0.3);
             color: #fff;
             font-size: 0.95rem;
             font-family: inherit;
             outline: none;
             transition: border 0.2s;
         }
-        .modal input:focus,
-        .modal select:focus,
-        .modal textarea:focus {
-            border-color: #8a6cff;
-        }
-        .modal textarea {
-            min-height: 80px;
-            resize: vertical;
-        }
+        .modal input:focus, .modal select:focus, .modal textarea:focus { border-color: #8a6cff; }
+        .modal textarea { min-height: 80px; resize: vertical; }
         .modal .preview-img {
             margin-top: 0.5rem;
             max-height: 120px;
@@ -422,95 +321,39 @@
             overflow: hidden;
             display: none;
         }
-        .modal .preview-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .modal .form-actions {
-            display: flex;
-            gap: 0.8rem;
-            margin-top: 1.8rem;
-        }
-        .modal .form-actions .btn {
-            flex: 1;
-        }
+        .modal .preview-img img { width: 100%; height: 100%; object-fit: cover; }
+        .modal .form-actions { display: flex; gap: 0.8rem; margin-top: 1.8rem; }
+        .modal .form-actions .btn { flex: 1; }
 
         @media (max-width: 640px) {
-            .navbar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .toolbar {
-                justify-content: flex-start;
-            }
-            .modal {
-                padding: 1.5rem;
-            }
-            .project-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .auth-container {
-                padding: 1.5rem;
-            }
-            .code-row {
-                flex-wrap: wrap;
-            }
-            .code-row button {
-                width: 100%;
-                height: 44px;
-            }
+            .navbar { flex-direction: column; align-items: stretch; }
+            .toolbar { justify-content: flex-start; }
+            .modal { padding: 1.5rem; }
+            .project-grid { grid-template-columns: 1fr 1fr; }
+            .auth-container { padding: 1.5rem; }
         }
-        @media (max-width: 420px) {
-            .project-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 420px) { .project-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
     <div class="app-wrapper">
-        <!-- ========== 登录 / 注册界面 ========== -->
+        <!-- ========== 登录界面 ========== -->
         <div id="authContainer" class="auth-container">
             <h1>✦ 灵感工坊</h1>
-            <div class="sub">登录以管理你的作品</div>
+            <div class="sub">使用邮箱和密码登录</div>
 
-            <!-- 登录表单 -->
             <form id="loginForm">
                 <label for="loginEmail">邮箱</label>
                 <input type="email" id="loginEmail" placeholder="your@email.com" required />
                 <label for="loginPassword">密码</label>
-                <input type="password" id="loginPassword" placeholder="至少6位" required minlength="6" />
+                <input type="password" id="loginPassword" placeholder="你的密码" required />
                 <button type="submit" class="btn">登 录</button>
                 <div class="error-msg" id="loginError"></div>
                 <div class="success-msg" id="loginSuccess"></div>
             </form>
 
-            <div class="toggle-link">
-                还没有账号？ <a id="showRegister">立即注册</a>
-            </div>
-
-            <!-- 注册表单 -->
-            <form id="registerForm" style="display:none; margin-top: 1rem;">
-                <label for="registerEmail">邮箱</label>
-                <input type="email" id="registerEmail" placeholder="your@email.com" required />
-
-                <label for="registerPassword">密码</label>
-                <input type="password" id="registerPassword" placeholder="至少6位" required minlength="6" />
-
-                <label for="registerCode">邮箱验证码</label>
-                <div class="code-row">
-                    <input type="text" id="registerCode" placeholder="6位验证码" required />
-                    <button type="button" class="btn-outline-sm" id="getCodeBtn">获取验证码</button>
-                </div>
-
-                <button type="submit" class="btn">注 册</button>
-                <div class="error-msg" id="registerError"></div>
-                <div class="success-msg" id="registerSuccess"></div>
-            </form>
-
-            <div class="toggle-link" id="showLoginLink" style="display:none;">
-                已有账号？ <a id="showLogin">去登录</a>
+            <div class="helper">
+                还没有账号？请在 <a href="https://console.cloud.tencent.com/tcb" target="_blank">CloudBase 控制台</a> → 身份认证 → 用户管理 中手动创建。
             </div>
         </div>
 
@@ -537,7 +380,7 @@
             </div>
         </div>
 
-        <!-- ========== 模态框（添加/编辑） ========== -->
+        <!-- 模态框 -->
         <div class="modal-overlay" id="modalOverlay">
             <div class="modal">
                 <div class="modal-title" id="modalTitle">添加作品</div>
@@ -581,19 +424,14 @@
         </div>
     </div>
 
-    <!-- ========== 引入 CloudBase SDK ========== -->
-    <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.17.3/cloudbase.full.js">
-    </script>
-
+    <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.17.3/cloudbase.full.js"></script>
     <script>
         // ============================================================
-        // 🔥 只需要替换这一行：把你的环境 ID 填进去！
+        // 🔥 替换为你的环境 ID
         // ============================================================
-        const ENV_ID = 'my-portfolio-d3gqx38bmf1e0296e'; // 👈 改成你的，例如 'my-portfolio-xxxxx'
+        const ENV_ID = 'my-portfolio-d3gqx38bmf1e0296e';
 
-        // ============================================================
         // 初始化 CloudBase
-        // ============================================================
         const app = cloudbase.init({ env: ENV_ID });
         const auth = app.auth();
         const db = app.database();
@@ -604,14 +442,8 @@
         const authContainer = document.getElementById('authContainer');
         const mainApp = document.getElementById('mainApp');
         const loginForm = document.getElementById('loginForm');
-        const registerForm = document.getElementById('registerForm');
-        const showRegisterLink = document.getElementById('showRegister');
-        const showLoginLink = document.getElementById('showLoginLink');
-        const showLoginBtn = document.getElementById('showLogin');
         const loginError = document.getElementById('loginError');
         const loginSuccess = document.getElementById('loginSuccess');
-        const registerError = document.getElementById('registerError');
-        const registerSuccess = document.getElementById('registerSuccess');
         const userEmailSpan = document.getElementById('userEmail');
         const logoutBtn = document.getElementById('logoutBtn');
 
@@ -639,126 +471,9 @@
         const submitBtn = document.getElementById('submitBtn');
         const cancelBtn = document.getElementById('cancelBtn');
 
-        // 注册专用
-        const registerEmail = document.getElementById('registerEmail');
-        const registerPassword = document.getElementById('registerPassword');
-        const registerCode = document.getElementById('registerCode');
-        const getCodeBtn = document.getElementById('getCodeBtn');
-
         let currentUser = null;
         let allProjects = [];
         let currentImageData = '';
-        let verificationId = null;
-
-        // ============================================================
-        // 切换登录/注册表单
-        // ============================================================
-        showRegisterLink.addEventListener('click', () => {
-            loginForm.style.display = 'none';
-            registerForm.style.display = 'block';
-            showRegisterLink.parentElement.style.display = 'none';
-            showLoginLink.style.display = 'block';
-            loginError.textContent = '';
-            loginSuccess.textContent = '';
-            registerError.textContent = '';
-            registerSuccess.textContent = '';
-        });
-        showLoginBtn.addEventListener('click', () => {
-            registerForm.style.display = 'none';
-            loginForm.style.display = 'block';
-            showLoginLink.style.display = 'none';
-            showRegisterLink.parentElement.style.display = 'block';
-            registerError.textContent = '';
-            registerSuccess.textContent = '';
-            loginError.textContent = '';
-            loginSuccess.textContent = '';
-        });
-
-        // ============================================================
-        // 获取验证码
-        // ============================================================
-        getCodeBtn.addEventListener('click', async () => {
-            const email = registerEmail.value.trim();
-            if (!email) {
-                registerError.textContent = '❌ 请先填写邮箱';
-                return;
-            }
-            registerError.textContent = '';
-            registerSuccess.textContent = '';
-            try {
-                const verification = await auth.getVerification({ email: email });
-                verificationId = verification.verification_id;
-                registerSuccess.textContent = '📧 验证码已发送，请查看邮箱（含垃圾箱）！';
-                getCodeBtn.textContent = '已发送 (60s)';
-                getCodeBtn.disabled = true;
-                let countdown = 60;
-                const timer = setInterval(() => {
-                    countdown--;
-                    getCodeBtn.textContent = `重新发送 (${countdown}s)`;
-                    if (countdown <= 0) {
-                        clearInterval(timer);
-                        getCodeBtn.textContent = '获取验证码';
-                        getCodeBtn.disabled = false;
-                    }
-                }, 1000);
-            } catch (err) {
-                if (err.code === 'LOGIN_TYPE_DISABLED') {
-                    registerError.textContent = '❌ 邮箱登录未开启，请在 CloudBase 控制台「身份认证」中开启。';
-                } else {
-                    registerError.textContent = '❌ 发送失败：' + (err.message || '请检查邮箱是否正确');
-                }
-                console.error('获取验证码错误:', err);
-            }
-        });
-
-        // ============================================================
-        // 注册（三步流程）
-        // ============================================================
-        registerForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = registerEmail.value.trim();
-            const password = registerPassword.value;
-            const code = registerCode.value.trim();
-
-            registerError.textContent = '';
-            registerSuccess.textContent = '';
-
-            if (!verificationId) {
-                registerError.textContent = '❌ 请先点击"获取验证码"';
-                return;
-            }
-            if (!code || code.length !== 6) {
-                registerError.textContent = '❌ 请输入6位验证码';
-                return;
-            }
-
-            try {
-                // 1. 验证验证码
-                const verifyRes = await auth.verify({
-                    verification_id: verificationId,
-                    verification_code: code
-                });
-
-                // 2. 注册
-                await auth.signUp({
-                    email: email,
-                    verification_code: code,
-                    verification_token: verifyRes.verification_token,
-                    password: password
-                });
-
-                // 注册成功后，auth 会自动登录，不需要额外操作
-                registerSuccess.textContent = '✅ 注册成功！正在跳转...';
-                // 等待状态变化自动跳转
-            } catch (err) {
-                if (err.code === 'LOGIN_TYPE_DISABLED') {
-                    registerError.textContent = '❌ 邮箱登录未开启，请在 CloudBase 控制台「身份认证」中开启。';
-                } else {
-                    registerError.textContent = '❌ ' + (err.message || '注册失败，请重试');
-                }
-                console.error('注册错误:', err);
-            }
-        });
 
         // ============================================================
         // 登录
@@ -771,15 +486,11 @@
             loginSuccess.textContent = '';
 
             try {
-                await auth.signIn({
-                    email: email,
-                    password: password
-                });
+                await auth.signIn({ email, password });
                 loginSuccess.textContent = '✅ 登录成功！';
-                // 等待状态变化
             } catch (err) {
                 loginError.textContent = '❌ ' + (err.message || '登录失败');
-                console.error('登录错误:', err);
+                console.error(err);
             }
         });
 
@@ -787,38 +498,27 @@
         // 退出
         // ============================================================
         logoutBtn.addEventListener('click', async () => {
-            try {
-                await auth.signOut();
-            } catch (err) {
-                console.error('退出错误:', err);
-            }
+            await auth.signOut();
         });
 
         // ============================================================
-        // 监听登录状态变化（核心）
+        // 监听登录状态
         // ============================================================
         auth.onAuthStateChanged((user) => {
             if (user) {
-                // 用户已登录
                 currentUser = user;
                 authContainer.style.display = 'none';
                 mainApp.classList.add('active');
                 userEmailSpan.textContent = user.email || user.uid;
-                loadProjects(); // 加载作品
+                loadProjects();
             } else {
-                // 用户未登录
                 currentUser = null;
                 authContainer.style.display = 'block';
                 mainApp.classList.remove('active');
                 allProjects = [];
                 renderProjects();
-                // 重置表单显示（保留当前登录/注册切换状态）
-                // 但不要干扰用户切换
             }
         });
-
-        // 首次加载时，由于 onAuthStateChanged 会立即触发，不需要额外检查
-        // 但为了避免未触发，可以手动触发一次（实际上不需要）
 
         // ============================================================
         // 作品数据操作
@@ -864,8 +564,7 @@
                 if (p.image && p.image.startsWith('data:image')) {
                     coverHtml = `<img src="${p.image}" alt="${p.title}" />`;
                 } else if (p.image && p.image.startsWith('http')) {
-                    coverHtml =
-                        `<img src="${p.image}" alt="${p.title}" onerror="this.style.display='none'" />`;
+                    coverHtml = `<img src="${p.image}" alt="${p.title}" onerror="this.style.display='none'" />`;
                 } else {
                     coverHtml = `<span class="placeholder-icon">${typeEmoji}</span>`;
                 }
@@ -877,8 +576,7 @@
 
                 let linkHtml = '';
                 if (p.url && p.url.trim()) {
-                    linkHtml =
-                        `<a href="${p.url}" target="_blank" class="project-link">🔗 查看项目</a>`;
+                    linkHtml = `<a href="${p.url}" target="_blank" class="project-link">🔗 查看项目</a>`;
                 }
 
                 html += `
@@ -972,9 +670,7 @@
             formImageFile.value = '';
         }
 
-        function closeModal() {
-            modalOverlay.classList.remove('active');
-        }
+        function closeModal() { modalOverlay.classList.remove('active'); }
 
         formImageUrl.addEventListener('input', function() {
             const url = this.value.trim();
@@ -1034,8 +730,7 @@
                 title: title,
                 type: formType.value,
                 desc: formDesc.value.trim(),
-                tags: formTags.value.trim() ? formTags.value.split(',').map(s => s.trim()).filter(Boolean) :
-                    [],
+                tags: formTags.value.trim() ? formTags.value.split(',').map(s => s.trim()).filter(Boolean) : [],
                 url: formUrl.value.trim(),
                 image: currentImageData || formImageUrl.value.trim() || ''
             };
@@ -1058,7 +753,6 @@
         });
         addBtn.addEventListener('click', () => openModal(null));
 
-        // 编辑/删除事件
         grid.addEventListener('click', function(e) {
             const target = e.target.closest('button');
             if (!target) return;
@@ -1074,7 +768,7 @@
         });
 
         // ============================================================
-        // 导出/导入备份
+        // 导出/导入
         // ============================================================
         exportBtn.addEventListener('click', function() {
             const data = JSON.stringify(allProjects, null, 2);
@@ -1100,9 +794,7 @@
                         alert('无效的备份文件');
                         return;
                     }
-                    if (!confirm(`即将导入 ${imported.length} 个作品，会添加到你的作品列表中。确定吗？`)) {
-                        return;
-                    }
+                    if (!confirm(`即将导入 ${imported.length} 个作品，确定吗？`)) return;
                     for (const item of imported) {
                         await addProject({
                             title: item.title || '未命名',
@@ -1123,8 +815,7 @@
             this.value = '';
         });
 
-        console.log('✅ CloudBase 应用已启动！');
-        console.log('📌 当前环境 ID:', ENV_ID);
+        console.log('✅ CloudBase 应用已启动，环境 ID:', ENV_ID);
     </script>
 </body>
 </html>
