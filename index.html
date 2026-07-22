@@ -4,12 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>灵感工坊 · 作品管理</title>
-    <!-- 引入 Firebase v9 模块化 SDK (CDN) -->
-    <script type="module">
-        // 这个 script 会被下文的内联模块使用，我们将在后面统一导入
-    </script>
     <style>
-        /* ---------- 全局 ---------- */
+        /* ---------- 全局样式 ---------- */
         * {
             margin: 0;
             padding: 0;
@@ -390,15 +386,6 @@
             min-height: 80px;
             resize: vertical;
         }
-        .modal .file-input-wrapper {
-            position: relative;
-        }
-        .modal .file-input-wrapper input[type="file"] {
-            padding: 0.5rem 0;
-            background: transparent;
-            border: none;
-            color: #a4b0cc;
-        }
         .modal .preview-img {
             margin-top: 0.5rem;
             max-height: 120px;
@@ -420,7 +407,6 @@
             flex: 1;
         }
 
-        /* ---------- 响应式 ---------- */
         @media (max-width: 640px) {
             .navbar {
                 flex-direction: column;
@@ -550,56 +536,30 @@
         </div>
     </div>
 
-    <!-- ========== Firebase 配置与逻辑 ========== -->
-    <script type="importmap">
-        {
-            "imports": {
-                "firebase/app": "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js",
-                "firebase/auth": "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js",
-                "firebase/firestore": "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"
-            }
-        }
+    <!-- ========== 引入 CloudBase SDK ========== -->
+    <script src="https://static.cloudbase.net/cloudbase-js-sdk/2.17.3/cloudbase.full.js">
     </script>
 
-    <script type="module">
-        // ----- 导入 Firebase -----
-        import { initializeApp } from 'firebase/app';
-        import {
-            getAuth,
-            createUserWithEmailAndPassword,
-            signInWithEmailAndPassword,
-            onAuthStateChanged,
-            signOut
-        } from 'firebase/auth';
-        import {
-            getFirestore,
-            collection,
-            doc,
-            getDocs,
-            addDoc,
-            updateDoc,
-            deleteDoc,
-            query,
-            where,
-            onSnapshot
-        } from 'firebase/firestore';
+    <script>
+        // ============================================================
+        // 🔥 只需要替换这一行：把你的环境 ID 填进去！
+        // 环境 ID 在 CloudBase 控制台 -> 概览 -> 顶部可以看到
+        // ============================================================
+        const ENV_ID = 'my-portfolio-d3gqx38bmf1e0296e'; // 
 
-        // ----- 🔥 在这里填入你的 Firebase 配置（从 Firebase 控制台获取） -----
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+        // ============================================================
+        // 初始化 CloudBase
+        // ============================================================
+        const app = cloudbase.init({
+            env: ENV_ID
+        });
 
-        // 初始化 Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        const auth = app.auth();
+        const db = app.database();
 
-        // ----- DOM 引用 -----
+        // ============================================================
+        // DOM 引用
+        // ============================================================
         const authContainer = document.getElementById('authContainer');
         const mainApp = document.getElementById('mainApp');
         const loginForm = document.getElementById('loginForm');
@@ -614,7 +574,6 @@
         const userEmailSpan = document.getElementById('userEmail');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        // 作品管理相关
         const grid = document.getElementById('projectGrid');
         const emptyState = document.getElementById('emptyState');
         const statsText = document.getElementById('statsText');
@@ -623,7 +582,6 @@
         const importBtn = document.getElementById('importBtn');
         const importFileInput = document.getElementById('importFileInput');
 
-        // 模态框
         const modalOverlay = document.getElementById('modalOverlay');
         const modalTitle = document.getElementById('modalTitle');
         const projectForm = document.getElementById('projectForm');
@@ -640,12 +598,13 @@
         const submitBtn = document.getElementById('submitBtn');
         const cancelBtn = document.getElementById('cancelBtn');
 
-        // ----- 全局状态 -----
         let currentUser = null;
         let allProjects = [];
-        let unsubscribeProjects = null;
+        let currentImageData = '';
 
-        // ----- 切换登录/注册表单 -----
+        // ============================================================
+        // 切换登录/注册表单
+        // ============================================================
         showRegisterLink.addEventListener('click', () => {
             loginForm.style.display = 'none';
             registerForm.style.display = 'block';
@@ -667,64 +626,71 @@
             loginSuccess.textContent = '';
         });
 
-        // ----- 注册 -----
+        // ============================================================
+        // 注册（使用邮箱）
+        // ============================================================
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('registerEmail').value.trim();
             const password = document.getElementById('registerPassword').value;
             registerError.textContent = '';
             registerSuccess.textContent = '';
+
             try {
-                const userCred = await createUserWithEmailAndPassword(auth, email, password);
-                registerSuccess.textContent = '注册成功！正在登录...';
-                // 自动登录由 onAuthStateChanged 处理
+                await auth.signUp({
+                    email: email,
+                    password: password
+                });
+                registerSuccess.textContent = '注册成功！请查收邮箱验证邮件，点击激活链接后即可登录。';
             } catch (err) {
-                registerError.textContent = err.message;
+                registerError.textContent = err.message || '注册失败，请重试';
             }
         });
 
-        // ----- 登录 -----
+        // ============================================================
+        // 登录（使用邮箱）
+        // ============================================================
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value.trim();
             const password = document.getElementById('loginPassword').value;
             loginError.textContent = '';
             loginSuccess.textContent = '';
+
             try {
-                await signInWithEmailAndPassword(auth, email, password);
+                await auth.signIn({
+                    email: email,
+                    password: password
+                });
                 loginSuccess.textContent = '登录成功！';
             } catch (err) {
-                loginError.textContent = err.message;
+                loginError.textContent = err.message || '登录失败，请检查邮箱和密码';
             }
         });
 
-        // ----- 退出 -----
+        // ============================================================
+        // 退出登录
+        // ============================================================
         logoutBtn.addEventListener('click', async () => {
-            await signOut(auth);
+            await auth.signOut();
         });
 
-        // ----- 监听认证状态 -----
-        onAuthStateChanged(auth, (user) => {
+        // ============================================================
+        // 监听登录状态变化
+        // ============================================================
+        auth.onAuthStateChanged(async (user) => {
             if (user) {
                 currentUser = user;
                 authContainer.style.display = 'none';
                 mainApp.classList.add('active');
-                userEmailSpan.textContent = user.email;
-                // 开始监听该用户的作品
-                listenToProjects(user.uid);
+                userEmailSpan.textContent = user.email || user.uid;
+                await loadProjects();
             } else {
                 currentUser = null;
                 authContainer.style.display = 'block';
                 mainApp.classList.remove('active');
-                // 取消监听
-                if (unsubscribeProjects) {
-                    unsubscribeProjects();
-                    unsubscribeProjects = null;
-                }
-                // 清空数据
                 allProjects = [];
                 renderProjects();
-                // 重置登录/注册表单显示
                 loginForm.style.display = 'block';
                 registerForm.style.display = 'none';
                 showRegisterLink.parentElement.style.display = 'block';
@@ -733,7 +699,6 @@
                 loginSuccess.textContent = '';
                 registerError.textContent = '';
                 registerSuccess.textContent = '';
-                // 清空输入
                 document.getElementById('loginEmail').value = '';
                 document.getElementById('loginPassword').value = '';
                 document.getElementById('registerEmail').value = '';
@@ -741,22 +706,27 @@
             }
         });
 
-        // ----- Firestore 监听 (实时更新) -----
-        function listenToProjects(uid) {
-            const q = query(collection(db, 'projects'), where('userId', '==', uid));
-            unsubscribeProjects = onSnapshot(q, (snapshot) => {
-                allProjects = [];
-                snapshot.forEach((doc) => {
-                    allProjects.push({ id: doc.id, ...doc.data() });
-                });
+        // ============================================================
+        // 加载作品（仅当前用户的）
+        // ============================================================
+        async function loadProjects() {
+            try {
+                const res = await db.collection('projects')
+                    .where({
+                        userId: currentUser.uid
+                    })
+                    .get();
+                allProjects = res.data || [];
                 renderProjects();
-            }, (error) => {
-                console.error('监听失败:', error);
+            } catch (err) {
+                console.error('加载失败:', err);
                 statsText.textContent = '加载数据失败，请刷新重试。';
-            });
+            }
         }
 
-        // ----- 渲染作品 -----
+        // ============================================================
+        // 渲染作品
+        // ============================================================
         function renderProjects() {
             if (allProjects.length === 0) {
                 grid.innerHTML = '';
@@ -783,14 +753,12 @@
 
                 let coverHtml = '';
                 if (p.image && p.image.startsWith('data:image')) {
-                    coverHtml =
-                    `<img src="${p.image}" alt="${p.title}" />`;
+                    coverHtml = `<img src="${p.image}" alt="${p.title}" />`;
                 } else if (p.image && p.image.startsWith('http')) {
                     coverHtml =
                         `<img src="${p.image}" alt="${p.title}" onerror="this.style.display='none'" />`;
                 } else {
-                    coverHtml =
-                        `<span class="placeholder-icon">${typeEmoji}</span>`;
+                    coverHtml = `<span class="placeholder-icon">${typeEmoji}</span>`;
                 }
 
                 let tagsHtml = '';
@@ -805,29 +773,30 @@
                 }
 
                 html += `
-                    <div class="project-card" data-id="${p.id}">
-                        <div class="project-cover">${coverHtml}</div>
-                        <div class="project-body">
-                            <span class="project-type">${p.type || '其他'}</span>
-                            <div class="project-title">${p.title}</div>
-                            <div class="project-desc">${p.desc || '暂无描述'}</div>
-                            ${tagsHtml ? `<div class="project-tags">${tagsHtml}</div>` : ''}
-                            ${linkHtml}
-                            <div class="project-actions">
-                                <button class="btn btn-sm btn-outline edit-btn" data-id="${p.id}">✏️ 编辑</button>
-                                <button class="btn btn-sm btn-danger delete-btn" data-id="${p.id}">🗑️ 删除</button>
+                        <div class="project-card" data-id="${p._id}">
+                            <div class="project-cover">${coverHtml}</div>
+                            <div class="project-body">
+                                <span class="project-type">${p.type || '其他'}</span>
+                                <div class="project-title">${p.title}</div>
+                                <div class="project-desc">${p.desc || '暂无描述'}</div>
+                                ${tagsHtml ? `<div class="project-tags">${tagsHtml}</div>` : ''}
+                                ${linkHtml}
+                                <div class="project-actions">
+                                    <button class="btn btn-sm btn-outline edit-btn" data-id="${p._id}">✏️ 编辑</button>
+                                    <button class="btn btn-sm btn-danger delete-btn" data-id="${p._id}">🗑️ 删除</button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
             });
             grid.innerHTML = html;
         }
 
-        // ----- 添加/更新/删除（Firestore）-----
-        async function addProjectToFirestore(data) {
-            if (!currentUser) return;
-            const docRef = await addDoc(collection(db, 'projects'), {
+        // ============================================================
+        // 添加/更新/删除（数据库操作）
+        // ============================================================
+        async function addProject(data) {
+            const doc = {
                 userId: currentUser.uid,
                 title: data.title,
                 type: data.type || '其他',
@@ -836,14 +805,13 @@
                 url: data.url || '',
                 image: data.image || '',
                 createdAt: Date.now()
-            });
-            return docRef.id;
+            };
+            const res = await db.collection('projects').add(doc);
+            return res.id;
         }
 
-        async function updateProjectInFirestore(id, data) {
-            if (!currentUser) return;
-            const docRef = doc(db, 'projects', id);
-            await updateDoc(docRef, {
+        async function updateProject(id, data) {
+            await db.collection('projects').doc(id).update({
                 title: data.title,
                 type: data.type || '其他',
                 desc: data.desc || '',
@@ -853,16 +821,15 @@
             });
         }
 
-        async function deleteProjectFromFirestore(id) {
-            if (!currentUser) return;
+        async function deleteProject(id) {
             if (!confirm('确定删除这个作品吗？')) return;
-            const docRef = doc(db, 'projects', id);
-            await deleteDoc(docRef);
+            await db.collection('projects').doc(id).remove();
+            await loadProjects();
         }
 
-        // ----- 模态框逻辑 -----
-        let currentImageData = '';
-
+        // ============================================================
+        // 模态框逻辑
+        // ============================================================
         function openModal(projectData = null) {
             currentImageData = '';
             previewContainer.style.display = 'none';
@@ -870,7 +837,7 @@
 
             if (projectData) {
                 modalTitle.textContent = '编辑作品';
-                editIdInput.value = projectData.id;
+                editIdInput.value = projectData._id;
                 formTitle.value = projectData.title || '';
                 formType.value = projectData.type || '其他';
                 formDesc.value = projectData.desc || '';
@@ -902,7 +869,6 @@
             modalOverlay.classList.remove('active');
         }
 
-        // 预览图片 URL
         formImageUrl.addEventListener('input', function() {
             const url = this.value.trim();
             if (url && (url.startsWith('http') || url.startsWith('data:image'))) {
@@ -914,7 +880,6 @@
             }
         });
 
-        // 压缩并预览上传图片
         formImageFile.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -950,7 +915,9 @@
             reader.readAsDataURL(file);
         }
 
-        // 提交表单
+        // ============================================================
+        // 表单提交（添加/编辑）
+        // ============================================================
         projectForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const title = formTitle.value.trim();
@@ -972,41 +939,44 @@
 
             try {
                 if (id) {
-                    await updateProjectInFirestore(id, data);
+                    await updateProject(id, data);
                 } else {
-                    await addProjectToFirestore(data);
+                    await addProject(data);
                 }
                 closeModal();
+                await loadProjects();
             } catch (err) {
                 alert('保存失败：' + err.message);
             }
         });
 
-        // 取消按钮
         cancelBtn.addEventListener('click', closeModal);
         modalOverlay.addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
 
-        // 添加按钮
         addBtn.addEventListener('click', () => openModal(null));
 
+        // ============================================================
         // 编辑/删除 事件委托
+        // ============================================================
         grid.addEventListener('click', function(e) {
             const target = e.target.closest('button');
             if (!target) return;
             if (target.classList.contains('edit-btn')) {
                 const id = target.dataset.id;
-                const project = allProjects.find(p => p.id === id);
+                const project = allProjects.find(p => p._id === id);
                 if (project) openModal(project);
             }
             if (target.classList.contains('delete-btn')) {
                 const id = target.dataset.id;
-                deleteProjectFromFirestore(id);
+                deleteProject(id);
             }
         });
 
-        // ----- 导出/导入备份（仅针对当前用户）-----
+        // ============================================================
+        // 导出/导入备份
+        // ============================================================
         exportBtn.addEventListener('click', function() {
             const data = JSON.stringify(allProjects, null, 2);
             const blob = new Blob([data], { type: 'application/json' });
@@ -1031,12 +1001,11 @@
                         alert('无效的备份文件');
                         return;
                     }
-                    if (!confirm(`即将导入 ${imported.length} 个作品，会添加到你的作品列表中（不会删除现有作品）。确定吗？`)) {
+                    if (!confirm(`即将导入 ${imported.length} 个作品，会添加到你的作品列表中。确定吗？`)) {
                         return;
                     }
-                    // 逐个添加
                     for (const item of imported) {
-                        await addProjectToFirestore({
+                        await addProject({
                             title: item.title || '未命名',
                             type: item.type || '其他',
                             desc: item.desc || '',
@@ -1045,6 +1014,7 @@
                             image: item.image || ''
                         });
                     }
+                    await loadProjects();
                     alert('导入成功！');
                 } catch (err) {
                     alert('文件解析失败：' + err.message);
@@ -1054,7 +1024,8 @@
             this.value = '';
         });
 
-        console.log('🔥 请将 firebaseConfig 替换为你自己的配置！');
+        console.log('✅ CloudBase 应用已启动！');
+        console.log('📌 当前环境 ID:', ENV_ID);
     </script>
 </body>
 </html>
